@@ -494,6 +494,7 @@ namespace CLI_Temple
 
             recipes.Add(new recipe(new item[] { new item("wood", 1) }.ToList(), new item("planks", 4)));
             recipes.Add(new recipe(new item[] { new item("planks", 2) }.ToList(), new item("sticks", 4)));
+            recipes.Add(new recipe(new item[] { new item("planks", 4) }.ToList(), new item("wood", 1)));
             recipes.Add(new recipe(new item[] { new item("iron_ore", 1), new item("coal", 2) }.ToList(), new item("iron", 1)));
             recipes.Add(new recipe(new item[] { new item("iron", 4), new item("wood", 6) }.ToList(), new item("bed", 1)));
             recipes.Add(new recipe(new item[] { new item("iron", 8), new item("coal", 6) }.ToList(), new item("tnt", 1)));
@@ -526,10 +527,6 @@ namespace CLI_Temple
             item.useDesc = "Use to select material to build with!";
 
             item = new item("coal", 0);
-            usables.Add(item);
-            item.useDesc = "Use to select material to build with!";
-
-            item = new item("planks", 0);
             usables.Add(item);
             item.useDesc = "Use to select material to build with!";
 
