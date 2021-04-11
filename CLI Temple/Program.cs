@@ -1092,7 +1092,15 @@ namespace CLI_Temple
 
         static char getCharBeforePlayer()
         {
-            return level[getCharXYBeforePlayer()[1]][getCharXYBeforePlayer()[0]];
+            try
+            {
+                return level[getCharXYBeforePlayer()[1]][getCharXYBeforePlayer()[0]];
+            }
+            catch
+            {
+                initPopup(ConsoleColor.Red, "IDK what the hell you are doing but stop it!", "You are playing that game wrong!");
+            }
+            return ' ';
         }
         static int[] getCharXYBeforePlayer()
         {
