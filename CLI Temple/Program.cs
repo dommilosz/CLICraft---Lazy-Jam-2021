@@ -109,7 +109,7 @@ namespace CLI_Temple
             Console.WriteLine("Game created by dommilosz / Milosz_123456#4766");
             Console.WriteLine("Nekuskus#1816");
             Console.WriteLine("micapl12#2237");
-            Console.WriteLine("Helped/tested: Stack Overflow, my class");
+            Console.WriteLine("Helped/tested: Stack Overflow, my class, 4Kakao5#5330, Jacobowski#6302");
             Console.WriteLine("ATOS!");
             Console.ReadKey(true);
         }
@@ -226,17 +226,21 @@ namespace CLI_Temple
 
         public static void explodeTnt(int x,int y,int power=5)
         {
-            if (level[y][x] != 'O')
-                writeToLevel(x, y, ' ');
+            try
+            {
+                if (level[y][x] != 'O')
+                    writeToLevel(x, y, ' ');
 
-            if(x>=0&&y>=0&&x<w&&y<h)
-            Console.SetCursorPosition(x + 1, y + 1);
-            ConsoleWrite(" ", ConsoleColor.Red);
-            if (power <= 0) return;
-            explodeTnt(x + 1, y, power - 1);
-            explodeTnt(x - 1, y, power - 1);
-            explodeTnt(x , y+1, power - 1);
-            explodeTnt(x , y-1, power - 1);
+                if (x >= 0 && y >= 0 && x < w && y < h)
+                    Console.SetCursorPosition(x + 1, y + 1);
+                ConsoleWrite(" ", ConsoleColor.Red);
+                if (power <= 0) return;
+                explodeTnt(x + 1, y, power - 1);
+                explodeTnt(x - 1, y, power - 1);
+                explodeTnt(x, y + 1, power - 1);
+                explodeTnt(x, y - 1, power - 1);
+            }
+            catch { }
         }
         public static void initExplodeTnt(int x, int y)
         {
@@ -308,11 +312,11 @@ namespace CLI_Temple
                 if (key.Key == ConsoleKey.A && !isInGui()) { playerR = 2; playerMove(); }
                 if (key.Key == ConsoleKey.D && !isInGui()) { playerR = 3; playerMove(); }
                 if (key.Key == ConsoleKey.Spacebar) mine();
-                if (key.Key == ConsoleKey.C) initCrafting();
-                if (key.Key == ConsoleKey.U) initUse();
+                if (key.Key == ConsoleKey.C && !wantUse) initCrafting();
+                if (key.Key == ConsoleKey.U && !wantCraft) initUse();
                 if (key.Key == ConsoleKey.F) useBlock();
                 if (key.Key == ConsoleKey.B) placeBlock();
-                if (key.Key == ConsoleKey.Escape) exitGameInGame();
+                if (key.Key == ConsoleKey.Escape && !isInGui()) exitGameInGame();
                 if (key.Key == ConsoleKey.S)
                 {
                     if (recipe_c < (wantCraft ? recipes.Count : usables.Count) - 1)
@@ -415,6 +419,13 @@ namespace CLI_Temple
                 {
                     initExplodeTnt(getCharXYUnderPlayer()[0], getCharXYUnderPlayer()[1]);
                 }
+                if (i.name == "hyper_tnt")
+                {
+                    for (int i2 = 0; i2 < level.Length; i2++)
+                    {
+                        level[i2] = new string(' ',w);
+                    };
+                }
                 if (i.useDesc.Contains("build"))
                 {
                     currentBuildItem = i;
@@ -488,6 +499,7 @@ namespace CLI_Temple
             inventory.Add(new item("bed", 0));
             inventory.Add(new item("diamond", 0, 'D'));
             inventory.Add(new item("tnt", 0, 'T'));
+            inventory.Add(new item("hyper_tnt", 0, '!'));
             inventory.Add(new item("obsidian", 0, 'O'));
             inventory.Add(new item("pickaxe", 0, 0));
             inventory.Add(new item("axe", 0, 0));
@@ -513,6 +525,10 @@ namespace CLI_Temple
             item = new item("tnt", 1);
             usables.Add(item);
             item.useDesc = "Place and see how your world reacts!";
+
+            item = new item("hyper_tnt", 1);
+            usables.Add(item);
+            item.useDesc = "Place and see how your world reacts^2!";
 
             item = new item("wood", 0);
             usables.Add(item);
@@ -631,6 +647,12 @@ namespace CLI_Temple
                     {
                         progressBar(progressbarsteps, false);
                         progressbarquerry = false;
+                        if (mineXY != null)
+                        {
+                            writeToLevel(mineXY[0], mineXY[1],' ');
+                            mining = false;
+                            mineXY = null;
+                        }
                         if (miningObsidian)
                         {
                             Console.Beep(300, 200);
@@ -640,7 +662,9 @@ namespace CLI_Temple
                             initPopup(ConsoleColor.DarkBlue, $"Obsidian broken in {timePassed}s!", "GAME OVER!");
                             miningObsidian = false;
                         }
+
                     }
+                    mining = false;
                     if (wantCraft)
                     {
                         wantCraftExit = false;
@@ -695,7 +719,7 @@ namespace CLI_Temple
             if (timePassed >= 0)
             {
                 Console.BackgroundColor = ConsoleColor.Black;
-                Console.Write($"Time: {timePassed} secounds");
+                Console.Write($"Time: {timePassed} seconds");
             }
         }
 
@@ -957,15 +981,19 @@ namespace CLI_Temple
         public static List<item> usables = new List<item>();
         public static List<recipe> recipes = new List<recipe>();
         static bool miningObsidian = false;
+        static bool mining = false;
+        static int[] mineXY;
         public static void mine()
         {
+            if (mining) return;
             if (getCharBeforePlayer() == 'S')
             {
                 if (item.getItemByName("pickaxe", inventory).level > 0)
                 {
                     miningProgressBar(100 / item.getItemByName("pickaxe", inventory).level);
                     item.getItemByName("stone", inventory).count++;
-                    writeToLevel(getCharXYBeforePlayer()[0], getCharXYBeforePlayer()[1], ' ');
+                    mineXY = getCharXYBeforePlayer();
+
                 }
                 else
                 {
@@ -1083,6 +1111,7 @@ namespace CLI_Temple
         static int progressbarsteps = 0;
         public static void miningProgressBar(int steps)
         {
+            mining = true;
             progressbarsteps = steps;
             progressbarquerry = true;
         }
@@ -1122,7 +1151,7 @@ namespace CLI_Temple
         }
         public static void playerMove()
         {
-            Console.Beep(400, 100);
+            //Console.Beep(400, 100);
             int prevX = playerX;
             int prevY = playerY;
             if (playerR == 0)
@@ -1349,7 +1378,8 @@ namespace CLI_Temple
             int progress = 2;
             while (progress < w - 1)
             {
-                Console.Beep(150, 20);
+                //Console.Beep(150, 20);
+                Thread.Sleep(20);
                 Console.SetCursorPosition(1, h / 2);
                 Console.Write(new string('#', w - 2));
                 Console.SetCursorPosition(1, (h / 2) + 1);
@@ -1365,8 +1395,10 @@ namespace CLI_Temple
                 progress++;
             }
             doingProgressBar = false;
-            Thread.Sleep(200);
             Console.Beep(600, 200);
+
+
+
         }
     }
     public static class EnumerableEx
